@@ -1,0 +1,69 @@
+<Window x:Class="OrgChartSpanOfControl.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ig="http://schemas.infragistics.com/xaml"
+        Title="組織図 - 管理限界(Span of Control)超過の可視化"
+        Height="800" Width="1200">
+    <Window.Resources>
+        <!-- 通常のノードスタイル -->
+        <Style x:Key="NormalNodeStyle" TargetType="ig:OrgChartNodeControl">
+            <Setter Property="Background" Value="#FFEFEFEF" />
+            <Setter Property="BorderBrush" Value="#FFB0B0B0" />
+            <Setter Property="BorderThickness" Value="1" />
+        </Style>
+
+        <!-- 管理限界を超過しているマネージャー用の警告スタイル -->
+        <Style x:Key="OverloadedManagerNodeStyle" TargetType="ig:OrgChartNodeControl">
+            <Setter Property="Background" Value="#FFFDE0DE" />
+            <Setter Property="BorderBrush" Value="#FFE74C3C" />
+            <Setter Property="BorderThickness" Value="2" />
+        </Style>
+
+        <!-- ノードの表示内容(氏名+役職、部下がいる場合は人数も表示) -->
+        <DataTemplate x:Key="EmployeeNodeTemplate">
+            <StackPanel Margin="8" MinWidth="120">
+                <TextBlock Text="{Binding Name}" FontWeight="Bold" FontSize="13" />
+                <TextBlock Text="{Binding Title}" FontSize="11" Foreground="#FF666666" />
+                <TextBlock Text="{Binding DirectReports.Count, StringFormat=部下: {0}名}"
+                           FontSize="10"
+                           Foreground="#FF888888"
+                           Margin="0,2,0,0" />
+            </StackPanel>
+        </DataTemplate>
+    </Window.Resources>
+
+    <Grid Margin="8">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <ig:XamOrgChart x:Name="OrgChart"
+                        Grid.Row="0"
+                        ItemsSource="{Binding RootEmployees}"
+                        InitialTreeDepth="4"
+                        NodeArrangementStrategy="Stagger"
+                        NodeControlAttachedEvent="OrgChart_NodeControlAttachedEvent">
+            <ig:XamOrgChart.GlobalNodeLayouts>
+                <ig:OrgChartNodeLayout TargetTypeName="Employee"
+                                       DisplayMemberPath="Name"
+                                       ItemTemplate="{StaticResource EmployeeNodeTemplate}"
+                                       Key="DirectReports" />
+            </ig:XamOrgChart.GlobalNodeLayouts>
+        </ig:XamOrgChart>
+
+        <Border Grid.Row="1" BorderBrush="#FFCCCCCC" BorderThickness="0,1,0,0" Padding="0,8,0,0" Margin="0,8,0,0">
+            <StackPanel Orientation="Horizontal">
+                <Ellipse Width="12" Height="12" Fill="#FFFDE0DE" Stroke="#FFE74C3C" StrokeThickness="1.5" Margin="0,0,4,0" />
+                <TextBlock Text="管理限界超過" VerticalAlignment="Center" Margin="0,0,20,0" />
+
+                <TextBlock Text="しきい値(直属部下数):" VerticalAlignment="Center" Margin="0,0,4,0" />
+                <TextBox x:Name="ThresholdTextBox" Width="40" Margin="0,0,12,0" />
+
+                <Button Content="しきい値を適用"
+                        Padding="8,4"
+                        Click="ApplyThresholdButton_Click" />
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>
